@@ -1,0 +1,73 @@
+---
+
+- import_tasks: roles/oci-deploy/tasks/setup.yml
+
+- name: Launch an instance
+  oci_compute_instance:
+    availability_domain: "{{ instance_ad }}"
+    compartment_id: "{{ compartment_id }}"
+    name: "{{ base_name }}-inst"
+    source_details:
+      source_type: image
+      image_id: "{{ instance_image }}"
+    shape: "{{ instance_shape }}"
+    create_vnic_details:
+        assign_public_ip: "{{ assign_public_ip }}"
+        hostname_label: "{{ instance_hostname }}"
+        subnet_id: "{{ instance_subnet_id }}"
+    metadata:
+        ssh_authorized_keys: "{{ lookup('file',  my_test_public_key ) }}"
+    config_profile_name: "{{config_profile}}" 
+    shape_config:
+      ocpus: "{{ ocpus }}"
+      memory_in_gbs: "{{ memory_in_gbs }}"
+  register: result
+
+- name: Print instance details
+  debug:
+    msg: "Launched a new instance {{ result }}"
+- set_fact:
+    instance_id: "{{result.instance.id }}"
+
+- name: Get the VNIC attachment details of instance
+  oci_compute_vnic_attachment_facts:
+    compartment_id: "{{ compartment_id }}"
+    instance_id: "{{ instance_id }}"
+    config_profile_name: "{{config_profile}}" 
+  register: result
+
+- name: Get details of the VNIC
+  oci_network_vnic_facts:
+    id: "{{ result.vnic_attachments[0].vnic_id }}"
+    config_profile_name: "{{config_profile}}" 
+  register: result
+- set_fact:
+    instance_public_ip: "{{result.vnic.public_ip}}"
+
+- name: Print the public ip of the newly launched instance
+  debug:
+    msg: "Public IP of launched instance {{ instance_public_ip }}"
+
+- name: Wait (upto 5 minutes) for port 22 to become open
+  wait_for:
+    port: 22
+    host: '{{ instance_public_ip }}'
+    state: started
+    delay: 10
+  vars:
+    ansible_connection: local
+
+- name: Attempt a ssh connection to the newly launced instance
+  command: ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -i {{ temp_certificates_path }}/id_rsa.pem ubuntu@{{ instance_public_ip }} uname -a
+  retries: 3
+  delay: 5
+  register: result
+  until: result.rc == 0
+
+- name: Print SSH response from launched instance
+  debug:
+    msg: "SSH response from instance -> {{ result.stdout_lines }}"
+
+- name: Print SSH keys temporary path
+  debug:
+    msg: "Cert Temp path {{ temp_certificates_path }}"

@@ -1,0 +1,10 @@
+- hosts: localhost
+  connection: local
+  become: no
+  gather_facts: no
+  vars_files:
+    - oci_auth.yml
+  collections:
+    - oracle.oci
+  roles:
+    - oci-deploy

@@ -1,0 +1,31 @@
+---
+# tasks file for oci-deploy
+
+
+# - name: Create a VCN
+#   oci_network_vcn:
+#     compartment_id: "{{ compartment_id }}"
+#     display_name: "{{ vcn_name }}"
+#     cidr_block: "{{ vcn_cidr_block }}"
+#     dns_label: "{{ vcn_dns_label }}"
+#   register: result
+# - set_fact:
+#     vcn_id: "{{ result.vcn.id }}"
+
+# - name: List compute facts
+#   oci_compute_instance_facts:
+#     compartment_id: "{{ compartment_id }}"
+#   register: result
+# - name: Dump result
+#   debug: 
+#     msg: '{{result}}'
+
+# - name: Net
+#   include: net.yml
+
+# - name: Shape
+#   include: shape.yml
+
+
+- name: Deploy
+  include: deploy.yml

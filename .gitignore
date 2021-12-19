@@ -1,0 +1,8 @@
+.DS_Store
+oci_auth.yml
+id_rsa_pub.pem
+id_rsa.pem
+ansible.cfg
+net.yml
+shape.yml
+teardown.yml

@@ -1,0 +1,48 @@
+---
+# vars file for minecraft
+
+base_name: "TEST"
+config_profile: "DEFAULT"
+# common networking definitions
+quad_zero_route: "0.0.0.0/0"
+TCP_protocol: "6"
+# SSH_port: "22"
+# HTML_port: "80"
+
+egress_ports:
+  - 22
+  - 443
+
+ingress_ports:
+# SSH
+  - 22
+# Minecraft  
+  - 25565
+vcn_name: "{{ base_name }}-vcn"
+vcn_cidr_block: "192.168.0.0/16"
+vcn_dns_label: "{{ base_name }}dns"
+
+ig_name: "{{ base_name }}-gtw"
+
+route_table_name: "{{ base_name }}-rt"
+# route all internet access to our Internet Gateway
+route_table_rules:
+  - cidr_block: "{{ quad_zero_route }}"
+    network_entity_id: "{{ ig_id }}"
+
+
+subnet_cidr: "192.168.10.0/24"
+subnet_name: "{{ base_name }}-sub"
+subnet_dns_label: "{{ base_name }}sub"
+
+securitylist_name: "{{ base_name }}-sl"
+
+assign_public_ip: True
+
+# always free shape
+operating_system: "Canonical Ubuntu"
+operating_system_version: '20.04'
+instance_shape: "VM.Standard.A1.Flex"   # or VM.Standard.E2.1.Micro
+instance_hostname: "{{ base_name }}-compute"
+ocpus: 1
+memory_in_gbs: 8
